@@ -2,6 +2,15 @@ spring:
   application:
     name: WalletService
 
+  profiles:
+    active: local
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
   datasource:
     url: jdbc:h2:mem:walletdb
     driver-class-name: org.h2.Driver
@@ -19,6 +28,30 @@ spring:
   h2:
     console:
       enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/walletdb
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
 
 server:
   port: 8080
