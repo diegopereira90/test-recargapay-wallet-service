@@ -27,34 +27,52 @@ public class WalletEntity {
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WalletBalanceHistoryEntity> history = new ArrayList<>();
 
-    public WalletEntity() {}
+    public WalletEntity() {
+    }
 
     public WalletEntity(Wallet wallet) {
         this.id = wallet.getId();
         this.balance = wallet.getBalance();
         List<WalletBalanceHistoryEntity> historyEntities = wallet.getHistory().stream()
-                .map(h -> {
-                    WalletBalanceHistoryEntity e = new WalletBalanceHistoryEntity();
-                    e.setWallet(this);
-                    e.setBalance(h.getBalance());
-                    e.setUpdatedAt(h.getUpdatedAt());
-                    return e;
-                })
-                .toList();
+            .map(h -> {
+                WalletBalanceHistoryEntity e = new WalletBalanceHistoryEntity();
+                e.setWallet(this);
+                e.setBalance(h.getBalance());
+                e.setUpdatedAt(h.getUpdatedAt());
+                return e;
+            })
+            .toList();
         this.history = historyEntities;
     }
 
-    public Long getId() { return id; }
-    public BigDecimal getBalance() { return balance; }
-    public List<WalletBalanceHistoryEntity> getHistory() { return history; }
-    public void setId(Long id) { this.id = id; }
-    public void setBalance(BigDecimal balance) { this.balance = balance; }
-    public void setHistory(List<WalletBalanceHistoryEntity> history) { this.history = history; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+
+    public List<WalletBalanceHistoryEntity> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<WalletBalanceHistoryEntity> history) {
+        this.history = history;
+    }
 
     public Wallet toDomain() {
         List<WalletBalanceHistory> history = this.history.stream()
-                .map(h -> new WalletBalanceHistory(h.getBalance(), h.getUpdatedAt()))
-                .toList();
+            .map(h -> new WalletBalanceHistory(h.getBalance(), h.getUpdatedAt()))
+            .toList();
         return new Wallet(this.id, this.balance, history);
     }
 }

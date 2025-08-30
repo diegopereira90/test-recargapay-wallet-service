@@ -27,11 +27,31 @@ public class WalletBalanceHistoryEntity {
     @JoinColumn(name = "wallet_id")
     private WalletEntity wallet;
 
-    public Long getId() { return id; }
-    public BigDecimal getBalance() { return balance; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public WalletEntity getWallet() { return wallet; }
-    public void setBalance(BigDecimal balance) { this.balance = balance; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    public void setWallet(WalletEntity wallet) { this.wallet = wallet; }
+    public Long getId() {
+        return id;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public WalletEntity getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(WalletEntity wallet) {
+        this.wallet = wallet;
+    }
 }

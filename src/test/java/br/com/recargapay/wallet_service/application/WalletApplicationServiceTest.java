@@ -36,8 +36,8 @@ public class WalletApplicationServiceTest {
 
     @Test
     void createWalletShouldReturnWalletResponse() {
-        Wallet wallet = new Wallet( 1L, BigDecimal.valueOf(100));
-        Wallet saved = new Wallet( 1L, BigDecimal.valueOf(100));
+        Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
+        Wallet saved = new Wallet(1L, BigDecimal.valueOf(100));
 
         when(repository.save(any(Wallet.class))).thenReturn(saved);
 
@@ -49,7 +49,7 @@ public class WalletApplicationServiceTest {
 
     @Test
     void depositShouldUpdateWalletBalance() {
-        Wallet wallet = new Wallet( 1L, BigDecimal.valueOf(100));
+        Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
         when(repository.findById(1L)).thenReturn(Optional.of(wallet));
 
         service.deposit(1L, BigDecimal.valueOf(50));
@@ -60,7 +60,7 @@ public class WalletApplicationServiceTest {
 
     @Test
     void withdrawShouldUpdateWalletBalance() {
-        Wallet wallet = new Wallet( 1L, BigDecimal.valueOf(100));
+        Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
         when(repository.findById(1L)).thenReturn(Optional.of(wallet));
 
         service.withdraw(1L, BigDecimal.valueOf(30));

@@ -19,8 +19,8 @@ public class WalletApplicationService implements WalletUseCase {
     private final WalletDomainService domainService;
 
     public WalletApplicationService(
-            WalletRepositoryPort repository,
-            WalletDomainService domainService) {
+        WalletRepositoryPort repository,
+        WalletDomainService domainService) {
         this.repository = repository;
         this.domainService = domainService;
     }

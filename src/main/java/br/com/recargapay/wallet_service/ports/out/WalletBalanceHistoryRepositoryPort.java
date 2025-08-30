@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface WalletBalanceHistoryRepositoryPort {
     WalletBalanceHistory save(WalletBalanceHistory history);
+
     List<WalletBalanceHistory> findByWalletId(Long walletId);
 }

@@ -59,11 +59,11 @@ public class WalletController {
 
     @GetMapping("/{walletId}/balance/historical")
     public ResponseEntity<BigDecimal> getHistoricalBalance(
-            @PathVariable Long walletId,
-            @RequestParam String at) {
+        @PathVariable Long walletId,
+        @RequestParam String at) {
         LocalDateTime time = LocalDateTime.parse(at);
         BigDecimal balance = walletService.getHistoricalBalance(
-                new HistoricalBalanceRequest(walletId, time));
+            new HistoricalBalanceRequest(walletId, time));
         return ResponseEntity.ok(balance);
     }
 }

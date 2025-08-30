@@ -13,6 +13,11 @@ public class WalletBalanceHistory {
         this.updatedAt = updatedAt;
     }
 
-    public BigDecimal getBalance() { return balance; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }

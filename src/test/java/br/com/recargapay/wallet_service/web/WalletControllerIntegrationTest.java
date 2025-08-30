@@ -43,9 +43,9 @@ public class WalletControllerIntegrationTest {
         WalletCreateRequest request = new WalletCreateRequest(BigDecimal.valueOf(100));
 
         ResponseEntity<WalletResponse> response = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/wallets",
-                request,
-                WalletResponse.class
+            "http://localhost:" + port + "/api/wallets",
+            request,
+            WalletResponse.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -62,9 +62,9 @@ public class WalletControllerIntegrationTest {
         Long walletId = saved.getId();
 
         ResponseEntity<Void> response = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/wallets/" + walletId + "/deposit?amount=50",
-                null,
-                Void.class
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/deposit?amount=50",
+            null,
+            Void.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -82,9 +82,9 @@ public class WalletControllerIntegrationTest {
         Long walletId = saved.getId();
 
         ResponseEntity<Void> response = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/wallets/" + walletId + "/withdraw?amount=50",
-                null,
-                Void.class
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/withdraw?amount=50",
+            null,
+            Void.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -100,12 +100,13 @@ public class WalletControllerIntegrationTest {
         Wallet target = new Wallet(null, BigDecimal.valueOf(50));
         WalletEntity targetEntity = walletRepository.save(new WalletEntity(target));
 
-        TransferRequest request = new TransferRequest(sourceEntity.getId(), targetEntity.getId(), BigDecimal.valueOf(30));
+        TransferRequest request =
+            new TransferRequest(sourceEntity.getId(), targetEntity.getId(), BigDecimal.valueOf(30));
 
         ResponseEntity<Void> response = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/wallets/transfer",
-                request,
-                Void.class
+            "http://localhost:" + port + "/api/wallets/transfer",
+            request,
+            Void.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -126,8 +127,8 @@ public class WalletControllerIntegrationTest {
         Long walletId = saved.getId();
 
         ResponseEntity<BigDecimal> response = restTemplate.getForEntity(
-                "http://localhost:" + port + "/api/wallets/" + walletId + "/balance",
-                BigDecimal.class
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/balance",
+            BigDecimal.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -137,8 +138,9 @@ public class WalletControllerIntegrationTest {
     @Test
     void getHistoricalBalanceShouldReturnCorrectBalance() throws InterruptedException {
         Wallet wallet = new Wallet(null, BigDecimal.ZERO);
+        Thread.sleep(Duration.ofMillis(1));
         wallet.deposit(BigDecimal.valueOf(100));
-        LocalDateTime historicalTime = LocalDateTime.now();
+        LocalDateTime historicalTime = wallet.getHistory().getLast().getUpdatedAt();
         Thread.sleep(Duration.ofMillis(1));
         wallet.withdraw(BigDecimal.valueOf(30));
         WalletEntity entity = new WalletEntity(wallet);
@@ -147,8 +149,8 @@ public class WalletControllerIntegrationTest {
         Long walletId = saved.getId();
 
         ResponseEntity<BigDecimal> response = restTemplate.getForEntity(
-                "http://localhost:" + port + "/api/wallets/" + walletId + "/balance/historical?at=" + historicalTime,
-                BigDecimal.class
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/balance/historical?at=" + historicalTime,
+            BigDecimal.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
