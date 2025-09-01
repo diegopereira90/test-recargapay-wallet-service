@@ -1,4 +1,4 @@
-package br.com.recargapay.wallet_service.application.dto;
+package br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto;
 
 import java.math.BigDecimal;
 

@@ -1,4 +1,4 @@
-package br.com.recargapay.wallet_service.infrastructure.entity;
+package br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity;
 
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 import br.com.recargapay.wallet_service.domain.model.WalletBalanceHistory;

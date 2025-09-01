@@ -1,4 +1,4 @@
-package br.com.recargapay.wallet_service.ports.out;
+package br.com.recargapay.wallet_service.application.port.out;
 
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 

@@ -1,12 +1,15 @@
 package br.com.recargapay.wallet_service.application;
 
-import br.com.recargapay.wallet_service.application.dto.HistoricalBalanceRequest;
-import br.com.recargapay.wallet_service.application.dto.WalletCreateRequest;
-import br.com.recargapay.wallet_service.application.dto.WalletResponse;
+import br.com.recargapay.wallet_service.application.port.out.WalletRepositoryPort;
 import br.com.recargapay.wallet_service.application.service.WalletApplicationService;
+import br.com.recargapay.wallet_service.domain.exception.WalletNotFoundException;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 import br.com.recargapay.wallet_service.domain.service.WalletDomainService;
-import br.com.recargapay.wallet_service.ports.out.WalletRepositoryPort;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletBalanceHistoryRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletCreateRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletDepositRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletResponse;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletWithdrawRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -37,22 +41,26 @@ public class WalletApplicationServiceTest {
     @Test
     void createWalletShouldReturnWalletResponse() {
         Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
-        Wallet saved = new Wallet(1L, BigDecimal.valueOf(100));
 
-        when(repository.save(any(Wallet.class))).thenReturn(saved);
+        when(repository.save(any(Wallet.class))).thenReturn(wallet);
 
-        WalletResponse response = service.createWallet(new WalletCreateRequest(BigDecimal.valueOf(100)));
+        WalletCreateRequest request = new WalletCreateRequest();
+        request.setInitialAmount(wallet.getBalance());
+        WalletResponse response = service.createWallet(request);
 
-        assertEquals(1L, response.walletId());
+        assertEquals(wallet.getId(), response.walletId());
+        assertEquals(wallet.getBalance(), response.balance());
         verify(repository, times(1)).save(any(Wallet.class));
     }
 
     @Test
     void depositShouldUpdateWalletBalance() {
         Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
-        when(repository.findById(1L)).thenReturn(Optional.of(wallet));
+        when(repository.findById(wallet.getId())).thenReturn(Optional.of(wallet));
 
-        service.deposit(1L, BigDecimal.valueOf(50));
+        WalletDepositRequest request = new WalletDepositRequest();
+        request.setAmount(BigDecimal.valueOf(50));
+        service.deposit(wallet.getId(), request);
 
         assertEquals(BigDecimal.valueOf(150), wallet.getBalance());
         verify(repository, times(1)).save(wallet);
@@ -61,9 +69,11 @@ public class WalletApplicationServiceTest {
     @Test
     void withdrawShouldUpdateWalletBalance() {
         Wallet wallet = new Wallet(1L, BigDecimal.valueOf(100));
-        when(repository.findById(1L)).thenReturn(Optional.of(wallet));
+        when(repository.findById(wallet.getId())).thenReturn(Optional.of(wallet));
 
-        service.withdraw(1L, BigDecimal.valueOf(30));
+        WalletWithdrawRequest request = new WalletWithdrawRequest();
+        request.setAmount(BigDecimal.valueOf(30));
+        service.withdraw(wallet.getId(), request);
 
         assertEquals(BigDecimal.valueOf(70), wallet.getBalance());
         verify(repository, times(1)).save(wallet);
@@ -72,10 +82,15 @@ public class WalletApplicationServiceTest {
     @Test
     void getBalanceShouldReturnCorrectBalance() {
         Wallet wallet = new Wallet(1L, BigDecimal.TEN);
-        when(repository.findById(1L)).thenReturn(Optional.of(wallet));
+        when(repository.findById(wallet.getId())).thenReturn(Optional.of(wallet));
 
-        assertEquals(service.getBalance(1L), wallet.getBalance());
-        verify(repository, times(1)).findById(1L);
+        assertEquals(service.getBalance(wallet.getId()), wallet.getBalance());
+        verify(repository, times(1)).findById(wallet.getId());
+    }
+
+    @Test
+    void getBalanceShouldNotFindWallet() {
+        assertThrows(WalletNotFoundException.class, () -> service.getBalance(1L));
     }
 
     @Test
@@ -86,10 +101,11 @@ public class WalletApplicationServiceTest {
         Thread.sleep(Duration.ofMillis(1));
         wallet.withdraw(BigDecimal.valueOf(30));
 
-        when(repository.findById(1L)).thenReturn(Optional.of(wallet));
+        when(repository.findById(wallet.getId())).thenReturn(Optional.of(wallet));
 
-        HistoricalBalanceRequest request = new HistoricalBalanceRequest(1L, time);
-        assertEquals(BigDecimal.valueOf(100), service.getHistoricalBalance(request));
-        verify(repository, times(1)).findById(1L);
+        WalletBalanceHistoryRequest request = new WalletBalanceHistoryRequest();
+        request.setBalanceAt(time);
+        assertEquals(BigDecimal.valueOf(100), service.getBalanceHistory(wallet.getId(), request));
+        verify(repository, times(1)).findById(wallet.getId());
     }
 }

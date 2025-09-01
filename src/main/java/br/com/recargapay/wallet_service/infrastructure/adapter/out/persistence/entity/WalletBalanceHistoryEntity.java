@@ -1,4 +1,4 @@
-package br.com.recargapay.wallet_service.infrastructure.entity;
+package br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

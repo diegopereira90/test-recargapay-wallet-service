@@ -1,8 +1,8 @@
-package br.com.recargapay.wallet_service.infrastructure.repository;
+package br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence;
 
+import br.com.recargapay.wallet_service.application.port.out.WalletRepositoryPort;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
-import br.com.recargapay.wallet_service.infrastructure.entity.WalletEntity;
-import br.com.recargapay.wallet_service.ports.out.WalletRepositoryPort;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;

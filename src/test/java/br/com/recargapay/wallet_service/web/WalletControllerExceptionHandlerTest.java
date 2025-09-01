@@ -1,0 +1,82 @@
+package br.com.recargapay.wallet_service.web;
+
+import br.com.recargapay.wallet_service.domain.model.Wallet;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletTransferRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.handler.WebErrorResponse;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.handler.WebExceptionHandler;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.JpaWalletRepository;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletEntity;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class WalletControllerExceptionHandlerTest {
+
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Autowired
+    private JpaWalletRepository walletRepository;
+
+    @BeforeEach
+    void setup() {
+        walletRepository.deleteAll();
+    }
+
+    @Test
+    void getBalance_nonExistentWallet_shouldReturn404() {
+        ResponseEntity<WebErrorResponse> response = restTemplate.getForEntity(
+            "http://localhost:" + port + "/api/wallets/1/balance",
+            WebErrorResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("Wallet not found");
+    }
+
+    @Test
+    void withdraw_insufficientBalance_shouldReturn400() {
+        WalletEntity source = walletRepository.saveAndFlush(new WalletEntity(new Wallet(null, BigDecimal.valueOf(10))));
+        WalletEntity target = walletRepository.saveAndFlush(new WalletEntity(new Wallet(null, BigDecimal.ZERO)));
+
+        WalletTransferRequest request = new WalletTransferRequest();
+        request.setAmount(BigDecimal.valueOf(100));
+        request.setDestinationWalletId(target.getId());
+
+        ResponseEntity<WebErrorResponse> response = restTemplate.postForEntity(
+            "http://localhost:" + port + "/api/wallets/" + source.getId() + "/withdraw",
+            request,
+            WebErrorResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getMessage()).contains("Insufficient balance");
+    }
+
+    @Test
+    void handleGenericException_shouldReturn500() {
+        Exception ex = new Exception("Unexpected error");
+        WebExceptionHandler handler = new WebExceptionHandler();
+
+        ResponseEntity<WebErrorResponse> response = handler.handleGeneric(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("Unexpected error occurred");
+    }
+}
+

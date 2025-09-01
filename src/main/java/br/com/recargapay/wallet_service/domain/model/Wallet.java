@@ -1,5 +1,7 @@
 package br.com.recargapay.wallet_service.domain.model;
 
+import br.com.recargapay.wallet_service.domain.exception.InsufficientBalanceException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -51,7 +53,7 @@ public class Wallet {
             throw new IllegalArgumentException("Amount must be positive");
         }
         if (balance.compareTo(amount) < 0) {
-            throw new IllegalStateException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient balance");
         }
         balance = balance.subtract(amount);
         addHistory(balance);

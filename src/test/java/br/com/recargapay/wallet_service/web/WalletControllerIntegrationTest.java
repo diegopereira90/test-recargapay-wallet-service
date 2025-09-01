@@ -1,11 +1,14 @@
 package br.com.recargapay.wallet_service.web;
 
-import br.com.recargapay.wallet_service.application.dto.TransferRequest;
-import br.com.recargapay.wallet_service.application.dto.WalletCreateRequest;
-import br.com.recargapay.wallet_service.application.dto.WalletResponse;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
-import br.com.recargapay.wallet_service.infrastructure.entity.WalletEntity;
-import br.com.recargapay.wallet_service.infrastructure.repository.JpaWalletRepository;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletBalanceHistoryRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletCreateRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletDepositRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletResponse;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletTransferRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletWithdrawRequest;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.JpaWalletRepository;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +43,8 @@ public class WalletControllerIntegrationTest {
 
     @Test
     void createWalletShouldReturnWalletId() {
-        WalletCreateRequest request = new WalletCreateRequest(BigDecimal.valueOf(100));
+        WalletCreateRequest request = new WalletCreateRequest();
+        request.setInitialAmount(BigDecimal.valueOf(100));
 
         ResponseEntity<WalletResponse> response = restTemplate.postForEntity(
             "http://localhost:" + port + "/api/wallets",
@@ -56,14 +60,15 @@ public class WalletControllerIntegrationTest {
     @Test
     void depositShouldIncreaseWalletBalance() {
         Wallet wallet = new Wallet(null, BigDecimal.valueOf(100));
-        WalletEntity entity = new WalletEntity(wallet);
-
-        WalletEntity saved = walletRepository.save(entity);
+        WalletEntity saved = walletRepository.save(new WalletEntity(wallet));
         Long walletId = saved.getId();
 
+        WalletDepositRequest request = new WalletDepositRequest();
+        request.setAmount(BigDecimal.valueOf(50));
+
         ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/deposit?amount=50",
-            null,
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/deposit",
+            request,
             Void.class
         );
 
@@ -76,14 +81,15 @@ public class WalletControllerIntegrationTest {
     @Test
     void withdrawShouldDecreaseWalletBalance() {
         Wallet wallet = new Wallet(null, BigDecimal.valueOf(100));
-        WalletEntity entity = new WalletEntity(wallet);
-
-        WalletEntity saved = walletRepository.save(entity);
+        WalletEntity saved = walletRepository.save(new WalletEntity(wallet));
         Long walletId = saved.getId();
 
+        WalletWithdrawRequest request = new WalletWithdrawRequest();
+        request.setAmount(BigDecimal.valueOf(50));
+
         ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/withdraw?amount=50",
-            null,
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/withdraw",
+            request,
             Void.class
         );
 
@@ -100,11 +106,12 @@ public class WalletControllerIntegrationTest {
         Wallet target = new Wallet(null, BigDecimal.valueOf(50));
         WalletEntity targetEntity = walletRepository.save(new WalletEntity(target));
 
-        TransferRequest request =
-            new TransferRequest(sourceEntity.getId(), targetEntity.getId(), BigDecimal.valueOf(30));
+        WalletTransferRequest request = new WalletTransferRequest();
+        request.setAmount(BigDecimal.valueOf(30));
+        request.setDestinationWalletId(targetEntity.getId());
 
         ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/transfer",
+            "http://localhost:" + port + "/api/wallets/" + sourceEntity.getId() + "/transfer",
             request,
             Void.class
         );
@@ -120,10 +127,8 @@ public class WalletControllerIntegrationTest {
 
     @Test
     void getBalanceShouldReturnCurrentBalance() {
-        Wallet wallet = new Wallet(null, BigDecimal.valueOf(200));
-        WalletEntity entity = new WalletEntity(wallet);
-
-        WalletEntity saved = walletRepository.save(entity);
+        Wallet wallet = new Wallet(null, BigDecimal.valueOf(100));
+        WalletEntity saved = walletRepository.save(new WalletEntity(wallet));
         Long walletId = saved.getId();
 
         ResponseEntity<BigDecimal> response = restTemplate.getForEntity(
@@ -132,24 +137,30 @@ public class WalletControllerIntegrationTest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualByComparingTo(BigDecimal.valueOf(200));
+        assertThat(response.getBody()).isEqualByComparingTo(BigDecimal.valueOf(100));
     }
 
     @Test
     void getHistoricalBalanceShouldReturnCorrectBalance() throws InterruptedException {
         Wallet wallet = new Wallet(null, BigDecimal.ZERO);
         Thread.sleep(Duration.ofMillis(1));
+
         wallet.deposit(BigDecimal.valueOf(100));
+
         LocalDateTime historicalTime = wallet.getHistory().getLast().getUpdatedAt();
         Thread.sleep(Duration.ofMillis(1));
-        wallet.withdraw(BigDecimal.valueOf(30));
-        WalletEntity entity = new WalletEntity(wallet);
 
-        WalletEntity saved = walletRepository.save(entity);
+        wallet.withdraw(BigDecimal.valueOf(30));
+
+        WalletEntity saved = walletRepository.save(new WalletEntity(wallet));
         Long walletId = saved.getId();
 
-        ResponseEntity<BigDecimal> response = restTemplate.getForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/balance/historical?at=" + historicalTime,
+        WalletBalanceHistoryRequest request = new WalletBalanceHistoryRequest();
+        request.setBalanceAt(historicalTime);
+
+        ResponseEntity<BigDecimal> response = restTemplate.postForEntity(
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/balance/history",
+            request,
             BigDecimal.class
         );
 

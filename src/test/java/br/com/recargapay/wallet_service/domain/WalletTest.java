@@ -1,5 +1,6 @@
 package br.com.recargapay.wallet_service.domain;
 
+import br.com.recargapay.wallet_service.domain.exception.InsufficientBalanceException;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 import org.junit.jupiter.api.Test;
 
@@ -59,11 +60,11 @@ public class WalletTest {
     void withdrawShouldThrowIfInsufficientBalance() {
         Wallet wallet = new Wallet(1L, BigDecimal.ONE);
 
-        assertThrows(IllegalStateException.class, () -> wallet.withdraw(BigDecimal.TWO));
+        assertThrows(InsufficientBalanceException.class, () -> wallet.withdraw(BigDecimal.TWO));
     }
 
     @Test
-    void getBalanceAtShouldReturnCorrectHistoricalBalance() throws InterruptedException {
+    void getBalanceHistoryShouldReturnCorrect() throws InterruptedException {
         Wallet wallet = new Wallet(1L, BigDecimal.ZERO);
         wallet.deposit(BigDecimal.valueOf(100));
         LocalDateTime time = LocalDateTime.now();
