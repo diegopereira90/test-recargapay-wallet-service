@@ -45,7 +45,7 @@ class WalletControllerExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getMessage()).isEqualTo("Wallet not found");
+        assertThat(response.getBody().getMessage()).isEqualTo("Wallet not found when try to check the balance");
     }
 
     @Test
@@ -64,7 +64,7 @@ class WalletControllerExceptionHandlerTest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().getMessage()).contains("Insufficient balance");
+        assertThat(response.getBody().getMessage()).contains("Insufficient balance for withdraw/transfer");
     }
 
     @Test

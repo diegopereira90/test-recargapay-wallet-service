@@ -42,7 +42,7 @@ public class Wallet {
 
     public void deposit(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new IllegalArgumentException("Amount must be positive for deposit");
         }
         balance = balance.add(amount);
         addHistory(balance);
@@ -50,10 +50,10 @@ public class Wallet {
 
     public void withdraw(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new IllegalArgumentException("Amount must be positive for withdraw");
         }
         if (balance.compareTo(amount) < 0) {
-            throw new InsufficientBalanceException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient balance for withdraw/transfer");
         }
         balance = balance.subtract(amount);
         addHistory(balance);
