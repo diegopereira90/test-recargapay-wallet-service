@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "wallet_balance_history")
-public class WalletBalanceHistoryEntity {
+public class WalletBalanceHistoryEntity extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

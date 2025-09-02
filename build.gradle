@@ -14,13 +14,31 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'net.logstash.logback:logstash-logback-encoder:7.4'
+        force 'io.opentelemetry:opentelemetry-api:1.49.0'
+        force 'io.opentelemetry:opentelemetry-sdk:1.49.0'
+        force 'io.opentelemetry:opentelemetry-context:1.49.0'
+        force 'io.opentelemetry:opentelemetry-exporter-otlp:1.49.0'
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-logging'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
+    implementation 'io.opentelemetry:opentelemetry-sdk:1.49.0'
+    implementation 'io.opentelemetry:opentelemetry-context:1.49.0'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.49.0'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.0.0-alpha'
+
     runtimeOnly 'com.h2database:h2'
     implementation 'org.postgresql:postgresql:42.6.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -52,7 +70,8 @@ tasks.jacocoTestReport {
             files(classDirectories.files.collect {
                 fileTree(dir: it, exclude: [
                         '**/*Application.class',
-                        '**/*Entity.class'
+                        '**/*Entity.class',
+                        '**/AuditableEntity.class'
                 ])
             })
     )

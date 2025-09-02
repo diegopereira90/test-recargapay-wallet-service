@@ -16,7 +16,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "wallets")
-public class WalletEntity {
+public class WalletEntity extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

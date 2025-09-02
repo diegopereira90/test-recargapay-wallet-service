@@ -30,15 +30,13 @@ spring:
       enabled: true
       path: /h2-console
 
-server:
-  port: 8080
+  server:
+    port: 8080
 
-logging:
-  level:
-    root: INFO
-    br.com.recargapay.wallet_service: TRACE
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+  logging:
+    level:
+      root: INFO
+      br.com.recargapay.wallet_service: TRACE
 
 ---
 spring:
@@ -60,12 +58,26 @@ spring:
     properties:
       hibernate.format_sql: true
 
-server:
-  port: 8080
+  opentelemetry:
+    traces:
+      exporter: otlp
+      otlp:
+        endpoint: "http://jaeger:4317"
+        service-name: wallet-service
 
-logging:
-  level:
-    root: INFO
-    br.com.recargapay.wallet_service: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus,httptrace
+    endpoint:
+      health:
+        show-details: always
+
+  server:
+    port: 8080
+
+  logging:
+    level:
+      root: INFO
+      br.com.recargapay.wallet_service: DEBUG

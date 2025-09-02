@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15
-    container_name: wallet_postgres
+    container_name: postgres
     environment:
       POSTGRES_DB: walletdb
       POSTGRES_USER: postgres
@@ -12,29 +12,52 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - elk
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9200:9200"
+    networks:
+      - elk
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.9.0
+    container_name: logstash
     ports:
       - "5000:5000"
     volumes:
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - elk
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: kibana
     ports:
       - "5601:5601"
     depends_on:
       - elasticsearch
+    networks:
+      - elk
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"   # UI web
+      - "4317:4317"     # OTLP gRPC (traces)
+      - "6831:6831/udp" # Jaeger Thrift (UDP)
+    networks:
+      - elk
 
   app:
     build: .
@@ -47,6 +70,15 @@ services:
       - postgres
       - elasticsearch
       - logstash
+      - jaeger
+    networks:
+      - elk
 
 volumes:
   postgres_data:
+
+networks:
+  elk:
+    name: elk
+    driver: bridge
+
