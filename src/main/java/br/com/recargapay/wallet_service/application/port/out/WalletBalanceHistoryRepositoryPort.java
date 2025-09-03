@@ -1,11 +1,14 @@
 package br.com.recargapay.wallet_service.application.port.out;
 
-import br.com.recargapay.wallet_service.domain.model.WalletBalanceHistory;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging.event.WalletBalanceUpdatedEvent;
+import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletBalanceHistoryEntity;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public interface WalletBalanceHistoryRepositoryPort {
-    WalletBalanceHistory save(WalletBalanceHistory history);
 
-    List<WalletBalanceHistory> findByWalletId(Long walletId);
+    WalletBalanceHistoryEntity save(WalletBalanceUpdatedEvent event);
+
+    BigDecimal balanceAt(Long walletId, LocalDateTime date);
 }

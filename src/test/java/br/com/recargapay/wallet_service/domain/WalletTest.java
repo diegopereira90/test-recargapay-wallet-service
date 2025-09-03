@@ -5,8 +5,6 @@ import br.com.recargapay.wallet_service.domain.model.Wallet;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -15,21 +13,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class WalletTest {
 
     @Test
-    void createShouldAddHistory() {
+    void createShouldAddEvent() {
         Wallet wallet = new Wallet(1L, BigDecimal.TEN);
 
-        assertEquals(BigDecimal.TEN, wallet.getHistory().getFirst().getBalance());
-        assertNotNull(wallet.getHistory().getFirst().getUpdatedAt());
+        assertEquals(BigDecimal.TEN, wallet.getEvents().getFirst().getBalance());
+        assertNotNull(wallet.getEvents().getFirst().getUpdatedAt());
     }
 
     @Test
-    void depositShouldIncreaseBalanceAndAddHistory() {
+    void depositShouldIncreaseBalanceAndAddEvent() {
         Wallet wallet = new Wallet(1L, BigDecimal.TEN);
         wallet.deposit(BigDecimal.ONE);
 
         assertEquals(BigDecimal.TEN.add(BigDecimal.ONE), wallet.getBalance());
-        assertEquals(BigDecimal.TEN.add(BigDecimal.ONE), wallet.getHistory().getLast().getBalance());
-        assertNotNull(wallet.getHistory().getLast().getUpdatedAt());
+        assertEquals(BigDecimal.TEN.add(BigDecimal.ONE), wallet.getEvents().getLast().getBalance());
+        assertNotNull(wallet.getEvents().getLast().getUpdatedAt());
     }
 
     @Test
@@ -40,13 +38,13 @@ public class WalletTest {
     }
 
     @Test
-    void withdrawShouldDecreaseBalanceAndAddHistory() {
+    void withdrawShouldDecreaseBalanceAndAddEvent() {
         Wallet wallet = new Wallet(1L, BigDecimal.TEN);
         wallet.withdraw(BigDecimal.TWO);
 
         assertEquals(BigDecimal.TEN.subtract(BigDecimal.TWO), wallet.getBalance());
-        assertEquals(BigDecimal.TEN.subtract(BigDecimal.TWO), wallet.getHistory().getLast().getBalance());
-        assertNotNull(wallet.getHistory().getLast().getUpdatedAt());
+        assertEquals(BigDecimal.TEN.subtract(BigDecimal.TWO), wallet.getEvents().getLast().getBalance());
+        assertNotNull(wallet.getEvents().getLast().getUpdatedAt());
     }
 
     @Test
@@ -61,16 +59,5 @@ public class WalletTest {
         Wallet wallet = new Wallet(1L, BigDecimal.ONE);
 
         assertThrows(InsufficientBalanceException.class, () -> wallet.withdraw(BigDecimal.TWO));
-    }
-
-    @Test
-    void getBalanceHistoryShouldReturnCorrect() throws InterruptedException {
-        Wallet wallet = new Wallet(1L, BigDecimal.ZERO);
-        wallet.deposit(BigDecimal.valueOf(100));
-        LocalDateTime time = LocalDateTime.now();
-        Thread.sleep(Duration.ofMillis(1));
-        wallet.withdraw(BigDecimal.valueOf(30));
-
-        assertEquals(BigDecimal.valueOf(100), wallet.getBalanceAt(time));
     }
 }

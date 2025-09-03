@@ -1,32 +1,24 @@
-package br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity;
+package br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging.event;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "wallet_balance_history")
-public class WalletBalanceHistoryEntity extends AuditableEntity {
+public class WalletBalanceUpdatedEvent implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private static final long serialVersionUID = 1L;
 
     private Long walletId;
     private BigDecimal balance;
     private LocalDateTime updatedAt;
 
-    public Long getId() {
-        return id;
+    public WalletBalanceUpdatedEvent() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public WalletBalanceUpdatedEvent(Long walletId, BigDecimal balance, LocalDateTime updatedAt) {
+        this.walletId = walletId;
+        this.balance = balance;
+        this.updatedAt = updatedAt;
     }
 
     public Long getWalletId() {

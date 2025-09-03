@@ -1,6 +1,5 @@
 package br.com.recargapay.wallet_service.application.port.in;
 
-import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletBalanceHistoryRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletCreateRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletDepositRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletResponse;
@@ -20,6 +19,4 @@ public interface WalletUseCase {
     void transfer(Long walletId, WalletTransferRequest request);
 
     BigDecimal getBalance(Long walletId);
-
-    BigDecimal getBalanceHistory(Long walletId, WalletBalanceHistoryRequest request);
 }

@@ -19,8 +19,7 @@ public class WalletRepositoryAdapter implements WalletRepositoryPort {
     @Override
     public Wallet save(Wallet wallet) {
         WalletEntity entity = new WalletEntity(wallet);
-        WalletEntity saved = repository.save(entity);
-        return entity.toDomain();
+        return repository.save(entity).toDomain();
     }
 
     @Override

@@ -4,40 +4,42 @@ import br.com.recargapay.wallet_service.domain.exception.InsufficientBalanceExce
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class Wallet {
 
-    private final Long id;
-    private final List<WalletBalanceHistory> history = new ArrayList<>();
+    private final List<WalletBalanceChanged> events = new ArrayList<>();
+    private Long id;
     private BigDecimal balance;
 
-    public Wallet(Long id, BigDecimal initialBalance) {
-        this.id = id;
-        this.balance = initialBalance;
-        addHistory(initialBalance);
+    public Wallet(Long id, BigDecimal balance) {
+        this(id, balance, true);
     }
 
-    public Wallet(Long id, BigDecimal balance, List<WalletBalanceHistory> history) {
+    public Wallet(Long id, BigDecimal balance, Boolean withEvent) {
         this.id = id;
         this.balance = balance;
-        this.history.addAll(history);
+        if (withEvent) {
+            addEvent(balance);
+        }
     }
 
     public BigDecimal getBalance() {
         return balance;
     }
 
-    public List<WalletBalanceHistory> getHistory() {
-        return Collections.unmodifiableList(history);
+    public List<WalletBalanceChanged> getEvents() {
+        return Collections.unmodifiableList(events);
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void deposit(BigDecimal amount) {
@@ -45,7 +47,7 @@ public class Wallet {
             throw new IllegalArgumentException("Amount must be positive for deposit");
         }
         balance = balance.add(amount);
-        addHistory(balance);
+        addEvent(balance);
     }
 
     public void withdraw(BigDecimal amount) {
@@ -56,19 +58,14 @@ public class Wallet {
             throw new InsufficientBalanceException("Insufficient balance for withdraw/transfer");
         }
         balance = balance.subtract(amount);
-        addHistory(balance);
+        addEvent(balance);
     }
 
-    public BigDecimal getBalanceAt(LocalDateTime updatedAt) {
-        return history.stream()
-            .sorted(Comparator.comparing(WalletBalanceHistory::getUpdatedAt))
-            .filter(h -> !h.getUpdatedAt().truncatedTo(ChronoUnit.MILLIS).isAfter(updatedAt))
-            .reduce((first, second) -> second)
-            .map(WalletBalanceHistory::getBalance)
-            .orElse(BigDecimal.ZERO);
+    private void addEvent(BigDecimal balance) {
+        events.add(new WalletBalanceChanged(balance, LocalDateTime.now()));
     }
 
-    private void addHistory(BigDecimal balance) {
-        history.add(new WalletBalanceHistory(balance, LocalDateTime.now()));
+    public void clearEvents() {
+        events.clear();
     }
 }

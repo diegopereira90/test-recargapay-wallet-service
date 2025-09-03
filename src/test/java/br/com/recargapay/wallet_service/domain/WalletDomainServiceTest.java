@@ -22,8 +22,8 @@ public class WalletDomainServiceTest {
 
         assertEquals(BigDecimal.valueOf(70), from.getBalance());
         assertEquals(BigDecimal.valueOf(80), to.getBalance());
-        assertEquals(2, from.getHistory().size());
-        assertEquals(2, to.getHistory().size());
+        assertEquals(2, from.getEvents().size());
+        assertEquals(2, to.getEvents().size());
     }
 
     @Test

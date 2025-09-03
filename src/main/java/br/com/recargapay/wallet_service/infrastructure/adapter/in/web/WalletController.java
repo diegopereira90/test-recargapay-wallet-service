@@ -1,5 +1,6 @@
 package br.com.recargapay.wallet_service.infrastructure.adapter.in.web;
 
+import br.com.recargapay.wallet_service.application.port.in.WalletBalanceHistoryUseCase;
 import br.com.recargapay.wallet_service.application.port.in.WalletUseCase;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletBalanceHistoryRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletCreateRequest;
@@ -24,8 +25,13 @@ public class WalletController {
 
     private final WalletUseCase walletService;
 
-    public WalletController(WalletUseCase walletService) {
+    private final WalletBalanceHistoryUseCase walletBalanceHistoryService;
+
+    public WalletController(
+        WalletUseCase walletService,
+        WalletBalanceHistoryUseCase walletBalanceHistoryService) {
         this.walletService = walletService;
+        this.walletBalanceHistoryService = walletBalanceHistoryService;
     }
 
     @PostMapping
@@ -68,7 +74,7 @@ public class WalletController {
     public ResponseEntity<BigDecimal> getBalanceHistory(
         @PathVariable Long walletId,
         @Valid @RequestBody WalletBalanceHistoryRequest request) {
-        BigDecimal balance = walletService.getBalanceHistory(walletId, request);
+        BigDecimal balance = walletBalanceHistoryService.getBalanceAt(walletId, request);
         return ResponseEntity.ok(balance);
     }
 }

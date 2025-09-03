@@ -1,11 +1,11 @@
 package br.com.recargapay.wallet_service.application.service;
 
 import br.com.recargapay.wallet_service.application.port.in.WalletUseCase;
+import br.com.recargapay.wallet_service.application.port.out.WalletBalanceEventMessagingPort;
 import br.com.recargapay.wallet_service.application.port.out.WalletRepositoryPort;
 import br.com.recargapay.wallet_service.domain.exception.WalletNotFoundException;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 import br.com.recargapay.wallet_service.domain.service.WalletDomainService;
-import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletBalanceHistoryRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletCreateRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletDepositRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletResponse;
@@ -23,12 +23,15 @@ public class WalletApplicationService implements WalletUseCase {
     private static final Logger log = LoggerFactory.getLogger(WalletApplicationService.class);
     private final WalletRepositoryPort repository;
     private final WalletDomainService domainService;
+    private final WalletBalanceEventMessagingPort publisher;
 
     public WalletApplicationService(
         WalletRepositoryPort repository,
-        WalletDomainService domainService) {
+        WalletDomainService domainService,
+        WalletBalanceEventMessagingPort publisher) {
         this.repository = repository;
         this.domainService = domainService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -37,7 +40,9 @@ public class WalletApplicationService implements WalletUseCase {
 
         Wallet wallet = new Wallet(null, request.getInitialAmount());
         Wallet saved = repository.save(wallet);
+        wallet.setId(saved.getId());
 
+        publishWalletBalanceChanged(wallet);
         log.debug("Wallet created successfully with walletId={}", saved.getId());
         return new WalletResponse(saved.getId(), saved.getBalance());
     }
@@ -52,6 +57,7 @@ public class WalletApplicationService implements WalletUseCase {
         wallet.deposit(request.getAmount());
         repository.save(wallet);
 
+        publishWalletBalanceChanged(wallet);
         log.debug("Wallet deposit processed successfully for walletId={}", walletId);
     }
 
@@ -65,6 +71,7 @@ public class WalletApplicationService implements WalletUseCase {
         wallet.withdraw(request.getAmount());
         repository.save(wallet);
 
+        publishWalletBalanceChanged(wallet);
         log.debug("Wallet withdraw processed successfully for walletId={}", walletId);
     }
 
@@ -81,6 +88,8 @@ public class WalletApplicationService implements WalletUseCase {
         repository.save(from);
         repository.save(to);
 
+        publishWalletBalanceChanged(from);
+        publishWalletBalanceChanged(to);
         log.debug("Wallet transfer processed successfully from walletId={}", walletId);
     }
 
@@ -96,15 +105,8 @@ public class WalletApplicationService implements WalletUseCase {
         return wallet.getBalance();
     }
 
-    @Override
-    public BigDecimal getBalanceHistory(Long walletId, WalletBalanceHistoryRequest request) {
-        log.info("Wallet balance history requested: walletId={}", walletId);
-
-        Wallet wallet =
-            repository.findById(walletId).orElseThrow(
-                () -> new WalletNotFoundException("Wallet not found when try to check the balance history"));
-
-        log.debug("Wallet balance history checked successfully from walletId={}", walletId);
-        return wallet.getBalanceAt(request.getBalanceAt());
+    private void publishWalletBalanceChanged(Wallet wallet) {
+        wallet.getEvents().forEach(e -> publisher.publish(wallet.getId(), e));
+        wallet.clearEvents();
     }
 }

@@ -38,6 +38,10 @@ spring:
       root: INFO
       br.com.recargapay.wallet_service: TRACE
 
+  spring:
+    rabbitmq:
+      dynamic: true
+
 ---
 spring:
   config:
@@ -81,3 +85,10 @@ spring:
     level:
       root: INFO
       br.com.recargapay.wallet_service: DEBUG
+
+  spring:
+    rabbitmq:
+      host: rabbitmq
+      port: 5672
+      username: guest
+      password: guest
