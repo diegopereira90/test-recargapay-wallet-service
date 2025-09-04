@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class WalletBalanceUpdatedEvent implements Serializable {
+public class WalletBalanceUpdatedEvent extends BaseEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -3,7 +3,7 @@ package br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging;
 import br.com.recargapay.wallet_service.application.port.out.WalletBalanceEventMessagingPort;
 import br.com.recargapay.wallet_service.domain.model.WalletBalanceChanged;
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging.event.WalletBalanceUpdatedEvent;
-import br.com.recargapay.wallet_service.infrastructure.configuration.RabbitConfig;
+import br.com.recargapay.wallet_service.infrastructure.configuration.RabbitConfigLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,7 +24,7 @@ public class RabbitWalletBalanceHistoryEventPublisher implements WalletBalanceEv
         log.info("Publish event WalletBalanceHistoryEvent for walletId={} with balance={} in date={}", walletId,
             event.getBalance(), event.getUpdatedAt());
 
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, RabbitConfig.ROUTING_KEY,
+        rabbitTemplate.convertAndSend(RabbitConfigLocal.EXCHANGE, RabbitConfigLocal.ROUTING_KEY,
             new WalletBalanceUpdatedEvent(walletId, event.getBalance(), event.getUpdatedAt()));
 
         log.debug("Wallet balance history event published with success for walletId={}", walletId);

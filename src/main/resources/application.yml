@@ -5,12 +5,6 @@ spring:
   profiles:
     active: local
 
----
-spring:
-  config:
-    activate:
-      on-profile: local
-
   datasource:
     url: jdbc:h2:mem:walletdb
     driver-class-name: org.h2.Driver
@@ -38,57 +32,5 @@ spring:
       root: INFO
       br.com.recargapay.wallet_service: TRACE
 
-  spring:
-    rabbitmq:
-      dynamic: true
-
----
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  datasource:
-    url: jdbc:postgresql://postgres:5432/walletdb
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
-
-  opentelemetry:
-    traces:
-      exporter: otlp
-      otlp:
-        endpoint: "http://jaeger:4317"
-        service-name: wallet-service
-
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health,info,metrics,prometheus,httptrace
-    endpoint:
-      health:
-        show-details: always
-
-  server:
-    port: 8080
-
-  logging:
-    level:
-      root: INFO
-      br.com.recargapay.wallet_service: DEBUG
-
-  spring:
-    rabbitmq:
-      host: rabbitmq
-      port: 5672
-      username: guest
-      password: guest
+  rabbitmq:
+    dynamic: true
