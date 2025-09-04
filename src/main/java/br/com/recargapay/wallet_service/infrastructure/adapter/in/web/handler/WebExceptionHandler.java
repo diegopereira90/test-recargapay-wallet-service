@@ -1,6 +1,7 @@
 package br.com.recargapay.wallet_service.infrastructure.adapter.in.web.handler;
 
 import br.com.recargapay.wallet_service.domain.exception.InsufficientBalanceException;
+import br.com.recargapay.wallet_service.domain.exception.InvalidTransferException;
 import br.com.recargapay.wallet_service.domain.exception.WalletNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,12 @@ public class WebExceptionHandler {
 
     @ExceptionHandler(InsufficientBalanceException.class)
     public ResponseEntity<WebErrorResponse> handleInsufficientBalance(InsufficientBalanceException ex) {
+        log.warn(ex.getLocalizedMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTransferException.class)
+    public ResponseEntity<WebErrorResponse> handleInvalidTransfer(InvalidTransferException ex) {
         log.warn(ex.getLocalizedMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }

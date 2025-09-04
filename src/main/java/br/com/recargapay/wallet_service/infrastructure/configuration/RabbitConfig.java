@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("dev")
-public class RabbitConfigDev {
+public class RabbitConfig {
 
     public static final String EXCHANGE = "wallet.balance.exchange";
     public static final String QUEUE = "wallet.balance.changed";

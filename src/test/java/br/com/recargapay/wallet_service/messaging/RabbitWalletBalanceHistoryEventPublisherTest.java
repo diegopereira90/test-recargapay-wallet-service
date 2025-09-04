@@ -3,7 +3,7 @@ package br.com.recargapay.wallet_service.messaging;
 import br.com.recargapay.wallet_service.domain.model.WalletBalanceChanged;
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging.RabbitWalletBalanceHistoryEventPublisher;
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.messaging.event.WalletBalanceUpdatedEvent;
-import br.com.recargapay.wallet_service.infrastructure.configuration.RabbitConfigLocal;
+import br.com.recargapay.wallet_service.infrastructure.configuration.RabbitConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,7 +39,7 @@ public class RabbitWalletBalanceHistoryEventPublisherTest {
         publisher.publish(walletId, event);
         ArgumentCaptor<WalletBalanceUpdatedEvent> captor = ArgumentCaptor.forClass(WalletBalanceUpdatedEvent.class);
         verify(rabbitTemplate, times(1))
-            .convertAndSend(eq(RabbitConfigLocal.EXCHANGE), eq(RabbitConfigLocal.ROUTING_KEY), captor.capture());
+            .convertAndSend(eq(RabbitConfig.EXCHANGE), eq(RabbitConfig.ROUTING_KEY), captor.capture());
 
         WalletBalanceUpdatedEvent sentEvent = captor.getValue();
         assertThat(sentEvent.getWalletId()).isEqualTo(walletId);

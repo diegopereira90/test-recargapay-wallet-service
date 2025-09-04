@@ -1,6 +1,7 @@
 package br.com.recargapay.wallet_service.domain;
 
 import br.com.recargapay.wallet_service.domain.exception.InsufficientBalanceException;
+import br.com.recargapay.wallet_service.domain.exception.InvalidTransferException;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
 import br.com.recargapay.wallet_service.domain.service.WalletDomainService;
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,17 @@ public class WalletDomainServiceTest {
         Wallet to = new Wallet(2L, BigDecimal.valueOf(50));
 
         assertThrows(InsufficientBalanceException.class, () -> service.transfer(from, to, BigDecimal.valueOf(30)));
+    }
+
+    @Test
+    void transferShouldFailWhenTransferringToSameWallet() {
+        WalletDomainService service = new WalletDomainService();
+        Wallet from = new Wallet(1L, BigDecimal.valueOf(100));
+        Wallet to = new Wallet(1L, BigDecimal.valueOf(50));
+
+        InvalidTransferException exception = assertThrows(
+            InvalidTransferException.class,
+            () -> service.transfer(from, to, BigDecimal.valueOf(50))
+        );
     }
 }

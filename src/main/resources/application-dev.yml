@@ -42,7 +42,11 @@ spring:
       br.com.recargapay.wallet_service: DEBUG
 
   rabbitmq:
+    dynamic: true
     host: rabbitmq
     port: 5672
     username: guest
     password: guest
+
+  jwt:
+    secret: JSL5RK0gaes8rq+KdCB0Bsw86rXdPapmMSgU9eBiAaM=

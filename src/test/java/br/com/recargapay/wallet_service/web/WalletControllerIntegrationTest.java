@@ -13,6 +13,7 @@ import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.J
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.JpaWalletRepository;
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletBalanceHistoryEntity;
 import br.com.recargapay.wallet_service.infrastructure.adapter.out.persistence.entity.WalletEntity;
+import br.com.recargapay.wallet_service.infrastructure.configuration.JwtRequestFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,8 +22,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -34,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(MockedBean.class)
+@WithMockUser(username = "testuser", roles = {"USER"})
 public class WalletControllerIntegrationTest {
 
     @LocalServerPort
@@ -51,12 +58,25 @@ public class WalletControllerIntegrationTest {
     @Autowired
     private WalletBalanceEventMessagingPort publisher;
 
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter;
+
+    private HttpHeaders headers;
+
     @BeforeEach
     void setup() {
         walletRepository.deleteAll();
         walletBalanceHistoryRepository.deleteAll();
         Mockito.reset(publisher);
         Mockito.doNothing().when(publisher).publish(Mockito.anyLong(), Mockito.any());
+
+        headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+    }
+
+    private <T> ResponseEntity<T> post(String url, Object body, Class<T> responseType) {
+        HttpEntity<Object> entity = new HttpEntity<>(body, headers);
+        return restTemplate.exchange("http://localhost:" + port + url, HttpMethod.POST, entity, responseType);
     }
 
     @Test
@@ -64,11 +84,7 @@ public class WalletControllerIntegrationTest {
         WalletCreateRequest request = new WalletCreateRequest();
         request.setInitialAmount(BigDecimal.valueOf(100));
 
-        ResponseEntity<WalletResponse> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets",
-            request,
-            WalletResponse.class
-        );
+        ResponseEntity<WalletResponse> response = post("/api/wallets", request, WalletResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -86,11 +102,7 @@ public class WalletControllerIntegrationTest {
         WalletDepositRequest request = new WalletDepositRequest();
         request.setAmount(BigDecimal.valueOf(50));
 
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/deposit",
-            request,
-            Void.class
-        );
+        ResponseEntity<Void> response = post("/api/wallets/" + walletId + "/deposit", request, Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -109,11 +121,7 @@ public class WalletControllerIntegrationTest {
         WalletWithdrawRequest request = new WalletWithdrawRequest();
         request.setAmount(BigDecimal.valueOf(30));
 
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/withdraw",
-            request,
-            Void.class
-        );
+        ResponseEntity<Void> response = post("/api/wallets/" + walletId + "/withdraw", request, Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -133,11 +141,7 @@ public class WalletControllerIntegrationTest {
         request.setAmount(BigDecimal.valueOf(30));
         request.setDestinationWalletId(target.getId());
 
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + source.getId() + "/transfer",
-            request,
-            Void.class
-        );
+        ResponseEntity<Void> response = post("/api/wallets/" + source.getId() + "/transfer", request, Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -197,14 +201,10 @@ public class WalletControllerIntegrationTest {
         WalletBalanceHistoryRequest request = new WalletBalanceHistoryRequest();
         request.setBalanceAt(historicalTime.truncatedTo(ChronoUnit.MILLIS));
 
-        ResponseEntity<BigDecimal> response = restTemplate.postForEntity(
-            "http://localhost:" + port + "/api/wallets/" + walletId + "/balance/history",
-            request,
-            BigDecimal.class
-        );
+        ResponseEntity<BigDecimal> response =
+            post("/api/wallets/" + walletId + "/balance/history", request, BigDecimal.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualByComparingTo(BigDecimal.valueOf(100));
     }
 }
-
