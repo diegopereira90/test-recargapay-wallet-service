@@ -5,7 +5,7 @@ import org.slf4j.MDC;
 
 public abstract class BaseEvent {
 
-    private String requestId;
+    private final String requestId;
 
     public BaseEvent() {
         this.requestId = MDC.get(RequestIdFilterConfig.REQUEST_ID_HEADER);
@@ -15,7 +15,4 @@ public abstract class BaseEvent {
         return requestId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
 }

@@ -18,7 +18,7 @@ import java.util.Collection;
 
 @Configuration
 @Profile("local")
-public class OpenTelemetryConfigLocalDummy {
+public class OpenTelemetryLocalDummyConfig {
 
     @Bean
     public SpanExporter otlpSpanExporterDummy() {

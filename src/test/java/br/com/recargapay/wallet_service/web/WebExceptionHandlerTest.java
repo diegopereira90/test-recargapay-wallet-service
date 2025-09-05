@@ -2,6 +2,7 @@ package br.com.recargapay.wallet_service.web;
 
 import br.com.recargapay.wallet_service.config.MockedBean;
 import br.com.recargapay.wallet_service.domain.model.Wallet;
+import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletDepositRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.dto.WalletTransferRequest;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.handler.WebErrorResponse;
 import br.com.recargapay.wallet_service.infrastructure.adapter.in.web.handler.WebExceptionHandler;
@@ -56,11 +57,9 @@ class WebExceptionHandlerTest {
     @Test
     void withdraw_insufficientBalance_shouldReturn400() {
         WalletEntity source = walletRepository.saveAndFlush(new WalletEntity(new Wallet(null, BigDecimal.valueOf(10))));
-        WalletEntity target = walletRepository.saveAndFlush(new WalletEntity(new Wallet(null, BigDecimal.ZERO)));
 
-        WalletTransferRequest request = new WalletTransferRequest();
+        WalletDepositRequest request = new WalletDepositRequest();
         request.setAmount(BigDecimal.valueOf(100));
-        request.setDestinationWalletId(target.getId());
 
         ResponseEntity<WebErrorResponse> response = restTemplate.postForEntity(
             "http://localhost:" + port + "/api/wallets/" + source.getId() + "/withdraw",
@@ -70,6 +69,25 @@ class WebExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getMessage()).contains("Insufficient balance for withdraw/transfer");
+    }
+
+    @Test
+    void transfer_invalid_shouldReturn400() {
+        walletRepository.saveAndFlush(new WalletEntity(new Wallet(null, BigDecimal.valueOf(10))));
+        Long walletId = walletRepository.findAll().getFirst().getId();
+
+        WalletTransferRequest request = new WalletTransferRequest();
+        request.setAmount(BigDecimal.valueOf(100));
+        request.setDestinationWalletId(walletId);
+
+        ResponseEntity<WebErrorResponse> response = restTemplate.postForEntity(
+            "http://localhost:" + port + "/api/wallets/" + walletId + "/transfer",
+            request,
+            WebErrorResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getMessage()).contains("Cannot transfer to the same wallet");
     }
 
     @Test

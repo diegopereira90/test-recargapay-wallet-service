@@ -76,7 +76,8 @@ tasks.jacocoTestReport {
                 fileTree(dir: it, exclude: [
                         '**/*Application.class',
                         '**/*Entity.class',
-                        '**/AuditableEntity.class'
+                        '**/AuditableEntity.class',
+                        '**/*Config.class'
                 ])
             })
     )

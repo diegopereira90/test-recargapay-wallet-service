@@ -59,10 +59,3 @@ spring:
 
   jwt:
     secret: JSL5RK0gaes8rq+KdCB0Bsw86rXdPapmMSgU9eBiAaM=
-
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
-      - io.opentelemetry.exporter.autoconfigure.OtlpMetricsAutoConfiguration
-      - io.opentelemetry.exporter.autoconfigure.OtlpTracingAutoConfiguration
-      - io.opentelemetry.exporter.autoconfigure.OtlpLogsAutoConfiguration

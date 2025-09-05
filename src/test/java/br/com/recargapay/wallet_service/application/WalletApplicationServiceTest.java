@@ -31,8 +31,7 @@ public class WalletApplicationServiceTest {
     private WalletRepositoryPort repository;
     private WalletApplicationService service;
     private WalletBalanceEventMessagingPort publisher;
-
-
+    
     @BeforeEach
     void setup() {
         repository = mock(WalletRepositoryPort.class);

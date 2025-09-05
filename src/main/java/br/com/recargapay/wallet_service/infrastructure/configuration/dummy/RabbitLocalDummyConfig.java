@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("local")
-public class RabbitConfigLocalDummy {
+public class RabbitLocalDummyConfig {
 
     @Bean
     public TopicExchange walletExchange() {
